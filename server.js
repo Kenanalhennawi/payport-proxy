@@ -8,9 +8,10 @@ app.use(cors());
 
 function fetchPayport(url) {
     return new Promise((resolve, reject) => {
-        https.get(
+        const req = https.get(
             url,
             {
+                timeout: 12000,
                 headers: {
                     "Accept": "application/json, text/javascript, */*; q=0.01",
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
@@ -32,7 +33,14 @@ function fetchPayport(url) {
                     });
                 });
             }
-        ).on("error", reject);
+        );
+
+        req.on("timeout", () => {
+            req.destroy();
+            reject(new Error("PayPort request timeout"));
+        });
+
+        req.on("error", reject);
     });
 }
 
